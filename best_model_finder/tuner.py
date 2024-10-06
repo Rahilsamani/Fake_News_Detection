@@ -1,6 +1,6 @@
 from sklearn.metrics import accuracy_score, roc_auc_score
 from sklearn.model_selection import train_test_split
-from nature_inspired_algorithms import GWO, PSO, GA, ACO, Firefly # Placeholder for imported algorithms
+from nature_inspired_algorithms import GWO, PSO, GA, ACO, Firefly
 
 class Model_Finder_NatureInspired:
     """
