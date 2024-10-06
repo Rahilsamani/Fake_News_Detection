@@ -1,56 +1,47 @@
 from datetime import datetime
 from os import listdir
-import pandas
+import pandas as pd
 from application_logging.logger import App_Logger
 
+class DataTransformPredict:
+    """
+    This class shall be used for transforming the Good Raw Prediction Data before processing.
+    """
 
-class dataTransformPredict:
+    def __init__(self):
+        self.goodDataPath = "Prediction_Raw_Files_Validated/Good_Raw"
+        self.logger = App_Logger()
 
-     """
-                  This class shall be used for transforming the Good Raw Training Data before loading it in Database!!.
+    def replaceMissingWithNull(self):
+        """
+        Method Name: replaceMissingWithNull
+        Description: This method replaces the missing values in columns with "NULL" for easier database storage.
+        It processes specific columns (like 'text' for fake news) for further use.
+        """
+        log_file = open("Prediction_Logs/dataTransformLog.txt", 'a+')
+        try:
+            onlyfiles = [f for f in listdir(self.goodDataPath)]
+            for file in onlyfiles:
+                # Read CSV file
+                csv = pd.read_csv(self.goodDataPath + "/" + file)
 
-                  Written By: iNeuron Intelligence
-                  Version: 1.0
-                  Revisions: None
+                # Replace missing values with 'NULL'
+                csv.fillna('NULL', inplace=True)
 
-                  """
+                # Example transformation for the 'text' column
+                if 'text' in csv.columns:
+                    # Apply any necessary text transformations
+                    csv['text'] = csv['text'].str.strip()  # Trim whitespace
+                    # Additional transformations can be added here
 
-     def __init__(self):
-          self.goodDataPath = "Prediction_Raw_Files_Validated/Good_Raw"
-          self.logger = App_Logger()
+                # Save the transformed data back to CSV
+                csv.to_csv(self.goodDataPath + "/" + file, index=False, header=True)
+                self.logger.log(log_file, "%s: File transformed successfully!!" % file)
+
+        except Exception as e:
+            self.logger.log(log_file, "Data transformation failed because:: %s" % e)
+            raise e
+        finally:
+            log_file.close()
 
 
-     def replaceMissingWithNull(self):
-
-          """
-                                  Method Name: replaceMissingWithNull
-                                  Description: This method replaces the missing values in columns with "NULL" to
-                                               store in the table. We are using substring in the first column to
-                                               keep only "Integer" data for ease up the loading.
-                                               This column is anyways going to be removed during prediction.
-
-                                   Written By: iNeuron Intelligence
-                                  Version: 1.0
-                                  Revisions: None
-
-                                          """
-
-          try:
-               log_file = open("Prediction_Logs/dataTransformLog.txt", 'a+')
-               onlyfiles = [f for f in listdir(self.goodDataPath)]
-               for file in onlyfiles:
-                    csv = pandas.read_csv(self.goodDataPath+"/" + file)
-                    csv.fillna('NULL',inplace=True)
-                    # #csv.update("'"+ csv['Wafer'] +"'")
-                    # csv.update(csv['Wafer'].astype(str))
-                    csv['Wafer'] = csv['Wafer'].str[6:]
-                    csv.to_csv(self.goodDataPath+ "/" + file, index=None, header=True)
-                    self.logger.log(log_file," %s: File Transformed successfully!!" % file)
-               #log_file.write("Current Date :: %s" %date +"\t" + "Current time:: %s" % current_time + "\t \t" +  + "\n")
-
-          except Exception as e:
-               self.logger.log(log_file, "Data Transformation failed because:: %s" % e)
-               #log_file.write("Current Date :: %s" %date +"\t" +"Current time:: %s" % current_time + "\t \t" + "Data Transformation failed because:: %s" % e + "\n")
-               log_file.close()
-               raise e
-          log_file.close()
